@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>Sample of websocket with golang</title>
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+
+    <script>
+        var userstr = [];
+
+        function generateMixed(n) {
+            var res = "";
+            for(var i = 0; i < n ; i ++) {
+                var id = Math.ceil(Math.random()*25);
+                res += userstr[id];
+            }
+            return res;
+        }
+
+
+        $(function () {
+            var ulDom = $('#msg-list');
+
+            for(var i=0;i<26;i++){
+                var temp = String.fromCharCode(97+i);
+                userstr.push(temp);  //输出a-z  26个小写字母
+            }
+            //console.log(user);
+            var userName = generateMixed(8);
+            var sendInputDom = $('#send-value');
+            var ws = new WebSocket("ws://localhost:8080/chat?userName=" + userName);
+
+            ws.onmessage = function (e) {
+                var msg =JSON.parse(e.data);
+                if (msg.user == userName) {
+                    var appendStr = '<li class="message-li"><span class="message-txt right">' + '' + msg.user + ': '  + msg.message + '</span></li>';
+                } else {
+                    var appendStr = '<li class="message-li"><span class="message-txt">' + '' + msg.user + ': '  + msg.message + '</span></li>';
+                }
+                ulDom.append(appendStr);
+                console.log("接收到的内容 => " + e.data);
+            };
+
+            ws.onerror = function (e) {
+                console.log('onerror');
+            };
+            ws.onclose = function (e) {
+                console.log('close');
+            }
+
+            $('#sendBtn').click(function () {
+                sendMsg();
+            });
+
+            function sendMsg() {
+                var data = sendInputDom.val();
+                if (data == '') {
+                    return false;
+                }
+                ws.send(data);
+                sendInputDom.val('');
+            }
+
+            document.onkeydown=function(event){
+                var e = event || window.event || arguments.callee.caller.arguments[0];
+                if(e && e.keyCode==13){  // enter 键
+                    sendMsg();
+                }
+            };
+
+
+        });
+    </script>
+    <style>
+        *{
+            padding:0px;
+            margin:0px;
+
+        }
+        .send{
+            width: 100%;
+            height:80px;
+            background: #ddd;
+            overflow: hidden;
+            position: fixed;
+            bottom: 0px;
+
+        }
+        .warp{
+            width: 100%;
+            height: 100%;
+        }
+        .send-btn{
+            width: 80px;
+            height:50px;
+            padding: 10px 5px;
+            background: #0e90d2;
+            border: 1px solid #0e90d2;
+            border-radius: 5px ;
+            color: #ffffff;
+            font-size: 16px;
+        }
+        .input{
+            width: 60%;
+            min-width: 180px;
+            max-width: 550px;
+            height: 50px;
+            border-radius: 5px;
+        }
+        .content{
+            width: 80%;
+            margin: 0 auto;
+            padding: 10px 0px ;
+        }
+        .message-txt{
+            height: 30px;
+            line-height: 30px;
+            background: #ddd;
+            border-radius: 5px;
+            padding: 6px 15px;
+        }
+        .message-li{
+            margin: 15px ;
+            float: left;
+            display: block;
+            width: 95%;
+        }
+        .right{
+            float: right;
+            background: #0e90d2;
+        }
+    </style>
+</head>
+<body>
+
+<div class="warp">
+
+        <ul id="msg-list">
+
+        </ul>
+
+    <div class="send">
+        <div class="content">
+            <input id="send-value" class="input" type="text"/>
+            <input type="button" id="sendBtn" value="send" class="send-btn"/>
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>
