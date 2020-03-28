@@ -35,7 +35,7 @@ type Msg struct {
 	Messag      string `json:"message"`
 	OnlineTotal int64  `json:"online"`
 	PostTime    string `json:"time"`
-	Type        string `json:"msgType"` //status：用户状态更新；msg：新消息
+	Type        string `json:"msgType"` //status：用户状态更新；msg：新消息; error
 }
 
 func init() {
@@ -61,7 +61,7 @@ func updateOnlineUser(user string, ws *websocket.Conn, isOnline bool) {
 	}
 	rwlock.Unlock()
 
-	log.Infof("用户:%s ,%s了", user, status)
+	//log.Infof("用户:%s ,%s了", user, status)
 	msg := Msg{
 		User:        user,
 		Messag:      fmt.Sprintf("用户%s %s了", user, status),
@@ -69,26 +69,63 @@ func updateOnlineUser(user string, ws *websocket.Conn, isOnline bool) {
 		PostTime:    time.Now().Format("2006-01-02 15:04:05"),
 		Type:        MSG_TYPE_STATUS,
 	}
-	SendMsg(msg)
+
+	//下线暂时不做消息通知
+	if isOnline {
+		SendMsg(msg)
+	}
 }
 
+func readUserList() {
+
+}
 func SendMsg(msg Msg) {
 	if len(msg.Messag) < 1 && msg.Type != MSG_TYPE_STATUS {
 		return
 	}
 	message, _ := json.Marshal(msg)
+	rwlock.Lock()
 	for _, v := range onlineInfo.UserList {
+		//log.Info("v----- : ", v)
 		if err := websocket.Message.Send(v, string(message)); err != nil {
-			log.Errorf("send msg[%s] error: %s", msg, err)
+			//log.Error("send msg[%s] error: %s", msg.Messag, err.Error())
+			log.Errorf("send msg[%s] error: ", msg.Messag)
 			continue
 		}
 	}
+	rwlock.Unlock()
+}
+
+func CheckOnlineUserCount(ws *websocket.Conn, user string) bool {
+	rwlock.Lock()
+	defer rwlock.Unlock()
+	if onlineInfo.UserCount >= 200 {
+		msg := Msg{
+			User:        user,
+			Messag:      "超出群成员上限，请稍后重试",
+			OnlineTotal: onlineInfo.UserCount,
+			PostTime:    time.Now().Format("2006-01-02 15:04:05"),
+			Type:        "error",
+		}
+		message, _ := json.Marshal(msg)
+		if err := websocket.Message.Send(ws, string(message)); err != nil {
+			//log.Error("send msg[%s] error: %s", msg.Messag, err.Error())
+			log.Errorf("超出连接限制，发送状态失败  send msg[%s] error: ", msg.Messag)
+		}
+		return true
+	}
+	return false
 }
 
 func Server(ws *websocket.Conn) {
 	var err error
 	userName := ws.Config().Location.Query().Get("userName")
 	if len(userName) < 1 {
+		return
+	}
+
+	//超过200人拒绝连接
+	if CheckOnlineUserCount(ws, userName) {
 		return
 	}
 
@@ -109,7 +146,7 @@ func Server(ws *websocket.Conn) {
 			time.Sleep(time.Second * 10)
 		}
 		if len(reply) < 1 {
-			log.Errorf("接收消息空 ", reply)
+			log.Error("接收消息空 ")
 			continue
 		}
 		msg := htmlDecode(strings.TrimRight(strings.TrimLeft(reply, "\n"), "\n"))
@@ -126,8 +163,8 @@ func Server(ws *websocket.Conn) {
 }
 
 func htmlDecode(str string) string {
-	str = strings.Replace(str, "<", "&lt;", -1)
-	str = strings.Replace(str, ">", "&gt", -1)
+	//str = strings.Replace(str, "<", "&lt;", -1)
+	//str = strings.Replace(str, ">", "&gt", -1)
 	str = strings.Replace(str, "\n", "&#13;", -1)
 	return str
 }

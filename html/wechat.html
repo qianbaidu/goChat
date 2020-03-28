@@ -38,115 +38,115 @@
         }
     </style>
     <style type="text/css">#chat {
-            overflow: hidden;
-            border-radius: 3px
-        }
+        overflow: hidden;
+        border-radius: 3px
+    }
 
-        #chat .main, #chat .sidebar {
-            height: 100%
-        }
+    #chat .main, #chat .sidebar {
+        height: 100%
+    }
 
-        #chat .sidebar {
-            float: left;
-            width: 200px;
-            color: #f4f4f4;
-            background-color: #2e3238
-        }
+    #chat .sidebar {
+        float: left;
+        width: 200px;
+        color: #f4f4f4;
+        background-color: #2e3238
+    }
 
-        #chat .main {
-            position: relative;
-            overflow: hidden;
-            background-color: #eee
-        }
+    #chat .main {
+        position: relative;
+        overflow: hidden;
+        background-color: #eee
+    }
 
-        #chat .m-text {
-            position: absolute;
-            width: 100%;
-            bottom: 0;
-            left: 0
-        }
+    #chat .m-text {
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        left: 0
+    }
 
-        #chat .m-message {
-            height: calc(100% - 10pc);
-            padding-top: 60px;
-        }</style>
+    #chat .m-message {
+        height: calc(100% - 10pc);
+        padding-top: 60px;
+    }</style>
     <style type="text/css">.m-card {
-            padding: 9pt;
-            border-bottom: 1px solid #24272c
-        }
+        padding: 9pt;
+        border-bottom: 1px solid #24272c
+    }
 
-        .m-card footer {
-            margin-top: 10px
-        }
+    .m-card footer {
+        margin-top: 10px
+    }
 
-        .m-card .avatar, .m-card .name {
-            vertical-align: middle
-        }
+    .m-card .avatar, .m-card .name {
+        vertical-align: middle
+    }
 
-        .m-card .avatar {
-            border-radius: 2px
-        }
+    .m-card .avatar {
+        border-radius: 2px
+    }
 
-        .m-card .name {
-            display: inline-block;
-            margin: 0 0 0 15px;
-            font-size: 1pc
-        }
+    .m-card .name {
+        display: inline-block;
+        margin: 0 0 0 15px;
+        font-size: 1pc
+    }
 
-        .m-card .search {
-            padding: 0 10px;
-            width: 100%;
-            font-size: 9pt;
-            color: #fff;
-            height: 30px;
-            line-height: 30px;
-            border: 1px solid #3a3a3a;
-            border-radius: 4px;
-            outline: 0;
-            background-color: #26292e
-        }</style>
+    .m-card .search {
+        padding: 0 10px;
+        width: 100%;
+        font-size: 9pt;
+        color: #fff;
+        height: 30px;
+        line-height: 30px;
+        border: 1px solid #3a3a3a;
+        border-radius: 4px;
+        outline: 0;
+        background-color: #26292e
+    }</style>
     <style type="text/css">.m-list li {
-            padding: 9pt 15px;
-            border-bottom: 1px solid #292c33;
-            cursor: pointer;
-            -webkit-transition: background-color .1s;
-            transition: background-color .1s
-        }
+        padding: 9pt 15px;
+        border-bottom: 1px solid #292c33;
+        cursor: pointer;
+        -webkit-transition: background-color .1s;
+        transition: background-color .1s
+    }
 
-        .m-list li:hover {
-            background-color: hsla(0, 0%, 100%, .03)
-        }
+    .m-list li:hover {
+        background-color: hsla(0, 0%, 100%, .03)
+    }
 
-        .m-list li.active {
-            background-color: hsla(0, 0%, 100%, .1)
-        }
+    .m-list li.active {
+        background-color: hsla(0, 0%, 100%, .1)
+    }
 
-        .m-list .avatar, .m-list .name {
-            vertical-align: middle
-        }
+    .m-list .avatar, .m-list .name {
+        vertical-align: middle
+    }
 
-        .m-list .avatar {
-            border-radius: 2px
-        }
+    .m-list .avatar {
+        border-radius: 2px
+    }
 
-        .m-list .name {
-            display: inline-block;
-            margin: 0 0 0 15px
-        }</style>
+    .m-list .name {
+        display: inline-block;
+        margin: 0 0 0 15px
+    }</style>
     <style type="text/css">.m-text {
-            height: 10pc;
-            border-top: 1px solid #ddd
-        }
+        height: 10pc;
+        border-top: 1px solid #ddd
+    }
 
-        .m-text textarea {
-            padding: 10px;
-            height: 100%;
-            width: 100%;
-            border: none;
-            outline: 0;
-            font-family: Micrsofot Yahei;
-            resize: none
-        }</style>
+    .m-text textarea {
+        padding: 10px;
+        height: 100%;
+        width: 100%;
+        border: none;
+        outline: 0;
+        font-family: Micrsofot Yahei;
+        resize: none
+    }</style>
     <style type="text/css">
         .m-message {
             padding: 10px 15px;
@@ -256,8 +256,8 @@
             </ul>
         </div>
     </div>
-    <div class="main">
-        <div class="m-message">
+    <div class="main" id="msg-warp">
+        <div class="m-message" id="msg-container">
             <div class="topbar">匿名聊天室(<span id="online-total"></span>)</div>
             <ul id="msg-list">
             </ul>
@@ -331,6 +331,8 @@
 
     $(function () {
         var ulDom = $('#msg-list');
+        var msgContainer = $('#msg-container');
+        var msgWarp = $('#msg-warp');
 
         for (var i = 0; i < 26; i++) {
             var temp = String.fromCharCode(97 + i);
@@ -341,8 +343,8 @@
         var sendInputDom = $('#send-value');
         var onlineDom = $('#online-total');
         $("#user-name").html(userName);
-        // var ws = new WebSocket("ws://localhost:8080/chat?userName=" + userName);
-        var ws = new WebSocket("ws://alex.qipajun.com/go/gochat/chat?userName=" + userName);
+        var ws = new WebSocket("ws://localhost:8080/chat?userName=" + userName);
+        // var ws = new WebSocket("ws://alex.qipajun.com/go/gochat/chat?userName=" + userName);
 
         ws.onmessage = function (e) {
             var msg = JSON.parse(e.data);
@@ -351,7 +353,7 @@
                 case "message":
                     apendStr = appendMsg(msg, userName);
                     break;
-                case "status":
+                case "status","error":
                     apendStr = updateStatus(msg, userName);
                     break;
                 default:
@@ -361,6 +363,10 @@
             onlineDom.html(msg.online);
             if (apendStr !== "") {
                 ulDom.append(apendStr);
+                var scrollTop = ulDom.height() + msgWarp.height();
+                // console.log(scrollTop);
+                msgContainer.animate({scrollTop: scrollTop + "px"}, 100);
+                // console.log("scrollTop:", $('#msg-container').scrollTop(), "  height: ", $('#msg-container').height(), "  parent height :", $('#msg-warp').height());
             }
             console.log("接收到的内容 => " + e.data);
         };
