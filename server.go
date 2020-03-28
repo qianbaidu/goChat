@@ -126,8 +126,8 @@ func Server(ws *websocket.Conn) {
 }
 
 func htmlDecode(str string) string {
-	str = strings.Replace(str, "<", "\\u003c", -1)
-	str = strings.Replace(str, ">", "\\u003e", -1)
+	str = strings.Replace(str, "<", "&lt;", -1)
+	str = strings.Replace(str, ">", "&gt", -1)
 	str = strings.Replace(str, "\n", "&#13;", -1)
 	return str
 }
@@ -148,9 +148,9 @@ func main() {
 	h := http.FileServer(http.Dir("./html"))
 	http.Handle("/images/", h)
 
-	http.HandleFunc("/index", Index)
+	http.HandleFunc("/", Index)
 
-	http.Handle("/", websocket.Handler(Server))
+	http.Handle("/chat", websocket.Handler(Server))
 	log.Info("start server :8080")
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
