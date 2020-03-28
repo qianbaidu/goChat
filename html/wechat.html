@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>vue</title>
+    <title>golang 匿名聊天室</title>
     <style>
         *, *:before, *:after {
             box-sizing: border-box;
@@ -244,16 +244,18 @@
 <div id="chat">
     <div class="sidebar">
         <div class="m-card">
-            <header><img class="avatar" width="40" height="40" alt="Coffce" src="images/1.jpg">
+            <header><img class="avatar" width="40" height="40" alt="Coffce" src="images/1.jpg" id="user-avatar">
                 <p class="name" id="user-name">user name</p></header>
             <footer><input class="search" placeholder="search user..."></footer>
         </div>
         <div class="m-list">
             <ul>
-                <li class="active"><img class="avatar" width="30" height="30" alt="示例介绍" src="images/3.jpg">
+                <li class="active"><img class="avatar" width="30" height="30" alt="示例介绍"
+                                        src="images/3.jpg">
                     <p class="name">聊天室</p></li>
             </ul>
-        </div></div>
+        </div>
+    </div>
     <div class="main">
         <div class="m-message">
             <div class="topbar">匿名聊天室(<span id="online-total"></span>)</div>
@@ -261,7 +263,7 @@
             </ul>
         </div>
         <div class="m-text"><textarea placeholder="按Ctrl + Enter 发送" id="send-value"></textarea></div>
-        </div>
+    </div>
 </div>
 <div style="text-align:center;">
 
@@ -271,6 +273,14 @@
 <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
 <script>
     var userstr = [];
+    avatars = [
+        "1.jpg",
+        "1-1.jpg",
+        "1-2.jpg"
+    ];
+    userAvatar = avatars[Math.floor(Math.random() * 3)];
+    $('#user-avatar').attr("src", "images/" + userAvatar);
+
 
     function generateMixed(n) {
         var res = "";
@@ -297,9 +307,9 @@
     function appendMsg(msg, userName) {
         var appendStr = ""
         if (msg.user === userName) {
-            var appendStr = '  <li><p class="time"><span>' + msg.time + '</span></p><div class="main self"><img class="avatar" width="30" height="30" src="images/1.jpg"><div class="msg-user-name">' + msg.user + '</div><div class="text">' + msg.message + '</div></div></li>';
+            var appendStr = '  <li><p class="time"><span>' + msg.time + '</span></p><div class="main self"><img class="avatar" width="30" height="30" src="images/' + userAvatar + '"><div class="msg-user-name">' + msg.user + '</div><div class="text">' + msg.message + '</div></div></li>';
         } else {
-            var appendStr = ' <li><p class="time"><span>' + msg.time + '</span></p><div class="main"><img class="avatar" width="30" height="30" src="images/2.png"><div class="msg-user-name">' + msg.user + '</div><div class="text">' + msg.message + '</div></div></li>';
+            var appendStr = ' <li><p class="time"><span>' + msg.time + '</span></p><div class="main"><img class="avatar" width="30" height="30" src="images/' + userAvatar + '"><div class="msg-user-name">' + msg.user + '</div><div class="text">' + msg.message + '</div></div></li>';
         }
         return appendStr;
     }
@@ -331,7 +341,8 @@
         var sendInputDom = $('#send-value');
         var onlineDom = $('#online-total');
         $("#user-name").html(userName);
-        var ws = new WebSocket("ws://localhost:8080/chat?userName=" + userName);
+        // var ws = new WebSocket("ws://localhost:8080/chat?userName=" + userName);
+        var ws = new WebSocket("ws://alex.qipajun.com/go/gochat/chat?userName=" + userName);
 
         ws.onmessage = function (e) {
             var msg = JSON.parse(e.data);
